@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Correlation or Causal Claim? — Sorting Drill</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+    background: #fafaf7;
+    color: #2c2c2c;
+    line-height: 1.6;
+    padding: 24px;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: #1a5276;
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .subtitle {
+    color: #5a6a78;
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+    font-weight: 400;
+  }
+
+  /* Intro panel */
+  .intro-panel {
+    background: #eaf2f8;
+    border-left: 4px solid #2d7fb8;
+    border-radius: 6px;
+    padding: 20px 24px;
+    margin-bottom: 28px;
+    font-size: 0.95rem;
+    line-height: 1.65;
+  }
+
+  .intro-panel strong {
+    color: #1a5276;
+  }
+
+  .keyword-row {
+    display: flex;
+    gap: 24px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+
+  .keyword-col {
+    flex: 1;
+    min-width: 220px;
+  }
+
+  .keyword-col h3 {
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 6px;
+    font-weight: 700;
+  }
+
+  .keyword-col.causal h3 { color: #c0392b; }
+  .keyword-col.corr h3 { color: #2471a3; }
+
+  .keyword-col ul {
+    list-style: none;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .keyword-col ul li {
+    background: #fff;
+    border-radius: 4px;
+    padding: 2px 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  .keyword-col.causal ul li {
+    border: 1px solid #e6b0aa;
+    color: #922b21;
+  }
+
+  .keyword-col.corr ul li {
+    border: 1px solid #a9cce3;
+    color: #1a5276;
+  }
+
+  /* Progress bar */
+  .progress-area {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 22px;
+  }
+
+  .progress-track {
+    flex: 1;
+    height: 8px;
+    background: #e0e0d8;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2d7fb8, #1a5276);
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+
+  .progress-text {
+    font-size: 0.85rem;
+    color: #5a6a78;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .score-display {
+    font-size: 0.85rem;
+    color: #5a6a78;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  /* Card */
+  .card {
+    background: #ffffff;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 32px 28px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+    transition: border-color 0.3s;
+  }
+
+  .card.correct { border-color: #27ae60; background: #f9fdf9; }
+  .card.incorrect { border-color: #c0392b; background: #fef9f8; }
+
+  .statement-label {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #888;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .statement-text {
+    font-family: 'Source Serif 4', Georgia, serif;
+    font-size: 1.2rem;
+    line-height: 1.55;
+    color: #1e1e1e;
+    margin-bottom: 24px;
+    font-weight: 400;
+  }
+
+  /* Buttons */
+  .btn-row {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    flex: 1;
+    min-width: 160px;
+    padding: 14px 20px;
+    border: 2px solid;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Source Sans 3', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: #fff;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  .btn:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  .btn-corr {
+    border-color: #2471a3;
+    color: #1a5276;
+  }
+  .btn-corr:hover:not(:disabled) { background: #eaf2f8; }
+
+  .btn-causal {
+    border-color: #c0392b;
+    color: #922b21;
+  }
+  .btn-causal:hover:not(:disabled) { background: #fdf2f0; }
+
+  /* Feedback */
+  .feedback {
+    margin-top: 20px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 0.93rem;
+    line-height: 1.6;
+    display: none;
+  }
+
+  .feedback.show { display: block; }
+
+  .feedback.correct {
+    background: #eafaf1;
+    border-left: 4px solid #27ae60;
+  }
+
+  .feedback.incorrect {
+    background: #fef5f3;
+    border-left: 4px solid #c0392b;
+  }
+
+  .feedback-header {
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .feedback.correct .feedback-header { color: #1e8449; }
+  .feedback.incorrect .feedback-header { color: #a93226; }
+
+  .feedback .highlight {
+    background: #fef9e7;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 600;
+  }
+
+  .next-btn {
+    margin-top: 16px;
+    padding: 10px 28px;
+    background: #2d7fb8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Source Sans 3', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .next-btn:hover { background: #1a5276; }
+
+  /* Results */
+  .results-panel {
+    background: #fff;
+    border: 2px solid #2d7fb8;
+    border-radius: 10px;
+    padding: 32px;
+    text-align: center;
+    display: none;
+  }
+
+  .results-panel h2 {
+    font-family: 'Source Serif 4', Georgia, serif;
+    color: #1a5276;
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+  }
+
+  .results-score {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #2d7fb8;
+    margin: 16px 0;
+  }
+
+  .results-msg {
+    font-size: 1rem;
+    color: #555;
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  .restart-btn {
+    padding: 12px 36px;
+    background: #2d7fb8;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Source Sans 3', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .restart-btn:hover { background: #1a5276; }
+
+  /* Difficulty badge */
+  .diff-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-weight: 700;
+    margin-left: 10px;
+    vertical-align: middle;
+  }
+
+  .diff-1 { background: #e8f8f5; color: #148f77; }
+  .diff-2 { background: #fef9e7; color: #b7950b; }
+  .diff-3 { background: #fdf2f0; color: #a93226; }
+
+  /* Review table */
+  .review-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    text-align: left;
+    font-size: 0.88rem;
+  }
+
+  .review-table th {
+    background: #f4f4f0;
+    padding: 8px 12px;
+    font-weight: 600;
+    border-bottom: 2px solid #ddd;
+    color: #555;
+  }
+
+  .review-table td {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+
+  .review-table .tag-corr {
+    color: #2471a3;
+    font-weight: 600;
+  }
+
+  .review-table .tag-causal {
+    color: #c0392b;
+    font-weight: 600;
+  }
+
+  .review-table .result-right { color: #27ae60; font-weight: 600; }
+  .review-table .result-wrong { color: #c0392b; font-weight: 600; }
+</style>
+</head>
+<body>
+
+<h1>Correlation or Causal Claim?</h1>
+<p class="subtitle">A sorting drill for PHIL 200 — Critical Thinking</p>
+
+<div class="intro-panel" id="introPanel">
+  <strong>Two kinds of statements look similar but say very different things.</strong><br><br>
+  A <strong style="color:#2471a3">correlation</strong> describes a <em>pattern</em> — two things that tend to go together. It says nothing about <em>why</em>.<br>
+  A <strong style="color:#c0392b">causal claim</strong> goes further — it says one thing <em>brings about</em>, <em>produces</em>, or <em>is responsible for</em> the other.<br><br>
+  Your job: read each statement and sort it. Watch for the <strong>signal words</strong>.
+  <div class="keyword-row">
+    <div class="keyword-col corr">
+      <h3>Correlation signals</h3>
+      <ul>
+        <li>associated with</li>
+        <li>tend to</li>
+        <li>linked to</li>
+        <li>go together</li>
+        <li>correlated</li>
+        <li>higher rates of</li>
+        <li>predicts</li>
+      </ul>
+    </div>
+    <div class="keyword-col causal">
+      <h3>Causal signals</h3>
+      <ul>
+        <li>causes</li>
+        <li>leads to</li>
+        <li>makes</li>
+        <li>produces</li>
+        <li>results in</li>
+        <li>because</li>
+        <li>is responsible for</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="progress-area" id="progressArea" style="display:none;">
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+  <span class="progress-text" id="progressText">1 / 16</span>
+  <span class="score-display" id="scoreDisplay">Score: 0</span>
+</div>
+
+<div class="card" id="card" style="display:none;">
+  <div class="statement-label">Statement <span id="stmtNum">1</span> of <span id="stmtTotal">16</span> <span class="diff-badge" id="diffBadge"></span></div>
+  <div class="statement-text" id="stmtText"></div>
+  <div class="btn-row">
+    <button class="btn btn-corr" id="btnCorr" onclick="answer('correlation')">Correlation</button>
+    <button class="btn btn-causal" id="btnCausal" onclick="answer('causal')">Causal Claim</button>
+  </div>
+  <div class="feedback" id="feedback">
+    <div class="feedback-header" id="feedbackHeader"></div>
+    <div id="feedbackBody"></div>
+    <button class="next-btn" id="nextBtn" onclick="nextStatement()">Next →</button>
+  </div>
+</div>
+
+<div class="results-panel" id="resultsPanel">
+  <h2>Drill Complete</h2>
+  <div class="results-score" id="resultsScore"></div>
+  <div class="results-msg" id="resultsMsg"></div>
+  <table class="review-table" id="reviewTable">
+    <thead><tr><th>#</th><th>Statement</th><th>Correct Answer</th><th>You Said</th></tr></thead>
+    <tbody id="reviewBody"></tbody>
+  </table>
+  <br>
+  <button class="restart-btn" onclick="restart()">Try Again (Reshuffled)</button>
+</div>
+
+<div style="text-align:center; margin-top:12px;">
+  <button class="next-btn" id="startBtn" onclick="startDrill()" style="padding:14px 40px; font-size:1.05rem;">Start the Drill →</button>
+</div>
+
+<script>
+const items = [
+  // TIER 1 — Clear signals
+  {
+    text: "People who exercise regularly tend to report lower levels of stress.",
+    answer: "correlation",
+    difficulty: 1,
+    explanation: 'The phrase <span class="highlight">tend to</span> describes a pattern between exercise and stress. It does not claim that one produces the other.'
+  },
+  {
+    text: "Smoking causes lung cancer.",
+    answer: "causal",
+    difficulty: 1,
+    explanation: 'The word <span class="highlight">causes</span> directly asserts that smoking produces lung cancer — this goes beyond describing a pattern.'
+  },
+  {
+    text: "Higher ice cream sales are associated with higher rates of drowning.",
+    answer: "correlation",
+    difficulty: 1,
+    explanation: '<span class="highlight">Associated with</span> and <span class="highlight">higher rates of</span> describe a pattern. No one is claiming ice cream produces drowning.'
+  },
+  {
+    text: "Sleep deprivation leads to impaired decision-making.",
+    answer: "causal",
+    difficulty: 1,
+    explanation: '<span class="highlight">Leads to</span> is causal language. It claims sleep deprivation brings about impaired decisions, not merely that they go together.'
+  },
+  {
+    text: "Countries with more televisions per household have higher life expectancy.",
+    answer: "correlation",
+    difficulty: 1,
+    explanation: 'This describes two things that go together across countries. It does not say televisions produce longer lives — it just notes the pattern.'
+  },
+
+  // TIER 2 — Moderate
+  {
+    text: "Students who sit in the front row get better grades because they can focus more easily.",
+    answer: "causal",
+    difficulty: 2,
+    explanation: '<span class="highlight">Because</span> is doing the heavy lifting here. It is not just noting a pattern — it is offering a reason why front-row students get better grades.'
+  },
+  {
+    text: "Neighborhoods with more police officers have higher crime rates.",
+    answer: "correlation",
+    difficulty: 2,
+    explanation: 'This is a pattern statement — two things go together. Notice it does not say police <em>cause</em> crime. In fact, the causal direction might run the other way: high crime could be the reason more officers are stationed there.'
+  },
+  {
+    text: "Drinking red wine in moderation is linked to better heart health.",
+    answer: "correlation",
+    difficulty: 2,
+    explanation: '<span class="highlight">Linked to</span> is correlation language. It describes an observed association, not a confirmed mechanism. People who drink moderate red wine might differ from non-drinkers in other ways too.'
+  },
+  {
+    text: "The new medication reduced tumor size in 73% of patients.",
+    answer: "causal",
+    difficulty: 2,
+    explanation: '<span class="highlight">Reduced</span> is causal — it says the medication brought about a change. This is not just a pattern; it attributes the shrinkage to the drug.'
+  },
+  {
+    text: "Children who read more books score higher on vocabulary tests.",
+    answer: "correlation",
+    difficulty: 2,
+    explanation: 'This describes what happens — kids who read more also score higher. But it does not assert that reading <em>produces</em> the higher scores. Maybe children with larger vocabularies enjoy reading more (reverse cause).'
+  },
+  {
+    text: "Exposure to violent video games makes children more aggressive.",
+    answer: "causal",
+    difficulty: 2,
+    explanation: '<span class="highlight">Makes</span> is a causal word. This claims the games produce the aggression, not just that the two go together.'
+  },
+
+  // TIER 3 — Subtle / Tricky
+  {
+    text: "Research has found that people who own pets tend to have lower blood pressure.",
+    answer: "correlation",
+    difficulty: 3,
+    explanation: 'Despite sounding authoritative ("research has found"), the claim is still correlational: <span class="highlight">tend to have</span> describes a pattern, not a mechanism. The research found an association — that is different from proving pets lower blood pressure.'
+  },
+  {
+    text: "Poverty is responsible for higher rates of chronic illness in underserved communities.",
+    answer: "causal",
+    difficulty: 3,
+    explanation: '<span class="highlight">Is responsible for</span> assigns a cause. This does not just say poverty and illness go together — it says poverty produces the illness.'
+  },
+  {
+    text: "A new study shows that optimistic people live longer.",
+    answer: "correlation",
+    difficulty: 3,
+    explanation: 'This is tricky because "a new study shows" suggests something has been proven. But the claim itself — optimistic people live longer — only describes a pattern. Showing that two things go together is not the same as showing one produces the other.'
+  },
+  {
+    text: "Screen time before bed disrupts the body's production of melatonin, resulting in poor sleep.",
+    answer: "causal",
+    difficulty: 3,
+    explanation: 'This provides a full causal story: screen time <span class="highlight">disrupts</span> melatonin, <span class="highlight">resulting in</span> poor sleep. The mechanism (melatonin disruption) is specified. This is a causal claim, not just a pattern.'
+  },
+  {
+    text: "College graduates earn more over their lifetimes than non-graduates.",
+    answer: "correlation",
+    difficulty: 3,
+    explanation: 'This is one of the subtlest. It looks causal — we are used to hearing "go to college, earn more." But the statement only says graduates <em>do</em> earn more. It does not say the degree <em>produces</em> the earnings. People who finish college may differ from non-graduates in many other ways (family income, motivation, professional networks) that also affect earnings.'
+  }
+];
+
+let order = [];
+let current = 0;
+let score = 0;
+let results = [];
+
+function shuffle(arr) {
+  // Shuffle within each difficulty tier, then concatenate
+  const t1 = arr.filter(x => x.difficulty === 1);
+  const t2 = arr.filter(x => x.difficulty === 2);
+  const t3 = arr.filter(x => x.difficulty === 3);
+  [t1, t2, t3].forEach(a => {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+  });
+  return [...t1, ...t2, ...t3];
+}
+
+function startDrill() {
+  document.getElementById('startBtn').style.display = 'none';
+  document.getElementById('introPanel').style.display = 'none';
+  document.getElementById('progressArea').style.display = 'flex';
+  document.getElementById('card').style.display = 'block';
+  order = shuffle(items);
+  current = 0;
+  score = 0;
+  results = [];
+  showStatement();
+}
+
+function showStatement() {
+  const item = order[current];
+  document.getElementById('stmtNum').textContent = current + 1;
+  document.getElementById('stmtTotal').textContent = order.length;
+  document.getElementById('stmtText').textContent = item.text;
+  document.getElementById('progressText').textContent = (current + 1) + ' / ' + order.length;
+  document.getElementById('progressFill').style.width = ((current) / order.length * 100) + '%';
+  document.getElementById('scoreDisplay').textContent = 'Score: ' + score;
+
+  const badge = document.getElementById('diffBadge');
+  const labels = { 1: 'Clear', 2: 'Moderate', 3: 'Subtle' };
+  badge.textContent = labels[item.difficulty];
+  badge.className = 'diff-badge diff-' + item.difficulty;
+
+  document.getElementById('btnCorr').disabled = false;
+  document.getElementById('btnCausal').disabled = false;
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('card').className = 'card';
+}
+
+function answer(choice) {
+  const item = order[current];
+  const isCorrect = choice === item.answer;
+
+  document.getElementById('btnCorr').disabled = true;
+  document.getElementById('btnCausal').disabled = true;
+
+  if (isCorrect) {
+    score++;
+    document.getElementById('scoreDisplay').textContent = 'Score: ' + score;
+    document.getElementById('card').className = 'card correct';
+    document.getElementById('feedbackHeader').textContent = '✓ Correct!';
+    document.getElementById('feedback').className = 'feedback correct show';
+  } else {
+    document.getElementById('card').className = 'card incorrect';
+    const rightLabel = item.answer === 'correlation' ? 'Correlation' : 'Causal Claim';
+    document.getElementById('feedbackHeader').textContent = '✗ Not quite — this is a ' + rightLabel + '.';
+    document.getElementById('feedback').className = 'feedback incorrect show';
+  }
+
+  document.getElementById('feedbackBody').innerHTML = item.explanation;
+
+  results.push({
+    text: item.text,
+    correct: item.answer,
+    given: choice,
+    isCorrect: isCorrect
+  });
+
+  if (current === order.length - 1) {
+    document.getElementById('nextBtn').textContent = 'See Results →';
+  }
+}
+
+function nextStatement() {
+  current++;
+  if (current >= order.length) {
+    showResults();
+  } else {
+    showStatement();
+  }
+}
+
+function showResults() {
+  document.getElementById('card').style.display = 'none';
+  document.getElementById('progressArea').style.display = 'none';
+  document.getElementById('resultsPanel').style.display = 'block';
+  document.getElementById('resultsScore').textContent = score + ' / ' + order.length;
+  document.getElementById('progressFill').style.width = '100%';
+
+  const pct = Math.round(score / order.length * 100);
+  let msg = '';
+  if (pct === 100) msg = "Perfect score! You've mastered the distinction between correlation language and causal language. You're ready to move on to evaluating explanations.";
+  else if (pct >= 80) msg = "Strong work. You're reading these statements carefully. Review the ones you missed below — look at the signal words.";
+  else if (pct >= 60) msg = "You're getting there. Focus on the signal words: <em>tends to</em> and <em>associated with</em> describe patterns; <em>causes</em>, <em>leads to</em>, and <em>because</em> assert causes. Try again to build speed.";
+  else msg = "This distinction is tricky at first. Go back to the signal words in the intro and try again — the goal is to train your eye, and repetition helps.";
+
+  document.getElementById('resultsMsg').innerHTML = msg;
+
+  const tbody = document.getElementById('reviewBody');
+  tbody.innerHTML = '';
+  results.forEach((r, i) => {
+    const corrLabel = r.correct === 'correlation' ? 'Correlation' : 'Causal Claim';
+    const givenLabel = r.given === 'correlation' ? 'Correlation' : 'Causal Claim';
+    const corrClass = r.correct === 'correlation' ? 'tag-corr' : 'tag-causal';
+    const resultClass = r.isCorrect ? 'result-right' : 'result-wrong';
+    const resultText = r.isCorrect ? '✓ ' + givenLabel : '✗ ' + givenLabel;
+    tbody.innerHTML += '<tr><td>' + (i + 1) + '</td><td>' + r.text + '</td><td class="' + corrClass + '">' + corrLabel + '</td><td class="' + resultClass + '">' + resultText + '</td></tr>';
+  });
+}
+
+function restart() {
+  document.getElementById('resultsPanel').style.display = 'none';
+  document.getElementById('progressArea').style.display = 'flex';
+  document.getElementById('card').style.display = 'block';
+  order = shuffle(items);
+  current = 0;
+  score = 0;
+  results = [];
+  showStatement();
+}
+</script>
+
+</body>
+</html>
